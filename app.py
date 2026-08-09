@@ -1,4 +1,9 @@
 import streamlit as st
+try:
+    from deep_translator import GoogleTranslator
+    HAS_TRANSLATOR = True
+except ImportError:
+    HAS_TRANSLATOR = False
 
 data = [
     {
@@ -196,9 +201,9 @@ The baby will be third in line to the throne, after Prince Charles and Prince Wi
 ]
 
 def main():
-    st.set_page_config(page_title="English Self-Study App (Full Version)", layout="wide")
-    st.title("📚 English Reading Comprehension Practice (Full Data)")
-    st.markdown("Phiên bản đầy đủ: Đã bao gồm các bài đọc từ Unit 1 đến Unit 5 và Đọc 1.")
+    st.set_page_config(page_title="English Self-Study App (Translate)", layout="wide")
+    st.title("📚 English Reading Comprehension Practice")
+    st.markdown("Đã bao gồm chức năng dịch. (Yêu cầu cài đặt thư viện `deep-translator`)")
     
     st.sidebar.header("Chọn bài đọc")
     
@@ -209,6 +214,28 @@ def main():
     
     st.subheader(passage_data["title"])
     st.write(passage_data["content"])
+
+    # Thêm chức năng dịch
+    if HAS_TRANSLATOR:
+        if st.toggle("🌐 Dịch bài đọc sang Tiếng Việt"):
+            with st.spinner("Đang dịch... Vui lòng chờ một chút."):
+                try:
+                    # Cắt content thành các đoạn nhỏ để tránh bị lỗi độ dài (nếu có)
+                    paragraphs = passage_data["content"].split("\n")
+                    translated_paragraphs = []
+                    translator = GoogleTranslator(source='auto', target='vi')
+                    for p in paragraphs:
+                        if p.strip():
+                            translated_paragraphs.append(translator.translate(p))
+                        else:
+                            translated_paragraphs.append("")
+                    
+                    translated_text = "\n".join(translated_paragraphs)
+                    st.info(translated_text)
+                except Exception as e:
+                    st.error(f"Lỗi dịch thuật: {e}")
+    else:
+        st.warning("⚠️ Để dùng chức năng dịch tự động, hãy tắt app, cài đặt thư viện bằng lệnh: `pip install deep-translator`, sau đó chạy lại.")
     
     st.divider()
     st.subheader("Questions")
